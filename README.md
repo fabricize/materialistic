@@ -21,7 +21,7 @@ Or install it yourself as:
 ## Usage
 
 ```ruby
-materials = Materialistic.find "LCD-10862"
+materials = Materialistic.list "LCD-10862"
 p materials
 ```
 

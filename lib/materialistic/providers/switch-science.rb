@@ -20,11 +20,13 @@ module Materialistic
         products.inject([]) do |result, product|
           quantity = (product/'.detail/#quantity-message').text.strip.gsub(/^在庫：/, '')
 
+          pp (product/'.detail/p').text.strip
+
           result << {
             name: (product/'.detail/p').text.strip,
             description: (product/'img').attr('title').text.strip,
             mpn: (product/'img').attr('alt').text.strip,
-            sku: (product/'.addcart/input[name=plu]').attr('value').text,
+            sku: (product/'.addcart').empty? ? nil : (product/'.addcart/input[name=plu]').attr('value').text,
             price: (product/'.detail/.price').text.strip.gsub(/\D/, '').to_i,
             currency: 'JPY',
             quantity: quantity == '多数' ? QUANTITY_HUGE : quantity,
@@ -32,26 +34,26 @@ module Materialistic
             image: "https:" + (product/'img').attr('src').text
           }
         end
+      end
 
-        def item(sku)
-          page = @agent.get "https://www.switch-science.com/catalog/#{sku}/"
+      def item(sku)
+        page = @agent.get "https://www.switch-science.com/catalog/#{sku}/"
 
-          table = (page/'.table-bordered-rect/tr')
-          quantity = (table[7]/'td').text.strip
+        table = (page/'.table-bordered-rect/tr')
+        quantity = (table[7]/'td').text.strip
 
-          {
-            name: (table[1]/'td').text.strip,
-            description: (page/'#description').text.strip,
-            mpn: (table[2]/'td').text,
-            sku: (table[3]/'td').text,
-            postage_class: (table[4]/'td/span').text.to_i,
-            price: (table[5]/'td/.price').text.strip.gsub(/\D/, '').to_i,
-            currency: 'JPY',
-            quantity: quantity == '多数' ? QUANTITY_HUGE : quantity,
-            url: page.uri.to_s,
-            image: (table[0]/'a').attr('href').text
-          }
-        end
+        {
+          name: (table[1]/'td').text.strip,
+          description: (page/'#description').text.strip,
+          mpn: (table[2]/'td').text,
+          sku: (table[3]/'td').text,
+          postage_class: (table[4]/'td/span').text.to_i,
+          price: (table[5]/'td/.price').text.strip.gsub(/\D/, '').to_i,
+          currency: 'JPY',
+          quantity: quantity == '多数' ? QUANTITY_HUGE : quantity,
+          url: page.uri.to_s,
+          image: (table[0]/'a').attr('href').text
+        }
       end
     end
   end

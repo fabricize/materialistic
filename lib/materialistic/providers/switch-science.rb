@@ -4,15 +4,7 @@ require 'mechanize'
 
 module Materialistic
   module Providers
-    class BaseProvider
-      QUANTITY_HUGE = 'qty_huge'
-
-      def self.subclasses
-        ObjectSpace.each_object(singleton_class).select{ |klass| klass.superclass == self }
-      end
-    end
-
-    class SwitchScience < BaseProvider
+    class SwitchScience < Base
       def initialize
         @agent = Mechanize.new
       end
@@ -21,7 +13,7 @@ module Materialistic
         'Switch Science'
       end
 
-      def find(query)
+      def list(query)
         page = @agent.get "https://www.switch-science.com/catalog/list?keyword=#{query}"
 
         products = page/'.products_thumb/li'
@@ -31,11 +23,33 @@ module Materialistic
           result << {
             name: (product/'.detail/p').text.strip,
             description: (product/'img').attr('title').text.strip,
-            sku: (product/'img').attr('alt').text.strip,
+            mpn: (product/'img').attr('alt').text.strip,
+            sku: (product/'.addcart/input[name=plu]').attr('value').text,
             price: (product/'.detail/.price').text.strip.gsub(/\D/, '').to_i,
             currency: 'JPY',
             quantity: quantity == '多数' ? QUANTITY_HUGE : quantity,
-            image: "https:" + (product/'img').attr('src').text.strip
+            url: page.uri.merge((product/'a').attr('href').text).to_s,
+            image: "https:" + (product/'img').attr('src').text
+          }
+        end
+
+        def item(sku)
+          page = @agent.get "https://www.switch-science.com/catalog/#{sku}/"
+
+          table = (page/'.table-bordered-rect/tr')
+          quantity = (table[7]/'td').text.strip
+
+          {
+            name: (table[1]/'td').text.strip,
+            description: (page/'#description').text.strip,
+            mpn: (table[2]/'td').text,
+            sku: (table[3]/'td').text,
+            postage_class: (table[4]/'td/span').text.to_i,
+            price: (table[5]/'td/.price').text.strip.gsub(/\D/, '').to_i,
+            currency: 'JPY',
+            quantity: quantity == '多数' ? QUANTITY_HUGE : quantity,
+            url: page.uri.to_s,
+            image: (table[0]/'a').attr('href').text
           }
         end
       end

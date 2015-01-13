@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'pry-byebug'
 require 'pp'
 
 describe Materialistic do
@@ -6,9 +7,13 @@ describe Materialistic do
     expect(Materialistic::VERSION).not_to be nil
   end
 
-  it 'Valid item' do
-    result = Materialistic.find "LCD-10862"
-    pp result
+  it 'can list items' do
+    result = Materialistic.list 'LCD-10862'
     expect(result.class).to eq(Array)
+  end
+
+  it 'can fetch item details' do
+    result = Materialistic.item switch_science: '790'
+    expect(result.class).to eq(Hash)
   end
 end

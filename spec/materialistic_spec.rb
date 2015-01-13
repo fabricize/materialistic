@@ -8,8 +8,9 @@ describe Materialistic do
   end
 
   it 'can list items' do
-    result = Materialistic.list 'LCD-10862'
+    result = Materialistic.list 'Arduino'
     expect(result.class).to eq(Array)
+    pp result
   end
 
   it 'can fetch item details' do

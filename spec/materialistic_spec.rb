@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'pry-byebug'
 require 'pp'
 
-describe Materialistic do
+describe Materialistic, :vcr => true do
   it 'has a version number' do
     expect(Materialistic::VERSION).not_to be nil
   end
